@@ -1,0 +1,132 @@
+<div fxLayout="column" fxLayoutAlign="center center" class="title-card">
+    <div class="title-text">
+        <mat-icon class="truck-icon">
+            local_shipping
+        </mat-icon>
+        Trip Flow Visualizer
+    </div>
+  
+    <div class="subtitle-text">
+      A simple tool for travel agencies to explore the top graphs between selected trips
+    </div>
+</div>
+<div>
+    <mat-card>
+        <mat-card-content fxLayout="column" fxLayoutAlign="center center">
+            <div fxLayout="row" fxLayoutAlign="center center" fxLayoutGap="20px" class="trip-form-container">
+                <form  fxLayoutGap="20px" class="trip-form">
+                  <!-- Start Point -->
+                  <mat-form-field appearance="outline" floatLabel="always" class="trip-form-field">
+                    <mat-label>Start Point</mat-label>
+                    <input type="text"
+                           placeholder="Select a start point"
+                           matInput
+                           [formControl]="startControl"
+                           [(ngModel)]="startPoint"
+                           [matAutocomplete]="startPointAuto" required>
+                    <mat-autocomplete #startPointAuto="matAutocomplete">
+                      <mat-option *ngFor="let city of filteredStartOptions | async" [value]="city">
+                        {{ city }}
+                      </mat-option>
+                    </mat-autocomplete>
+                    <mat-icon matPrefix>location_on</mat-icon>
+                  </mat-form-field>
+              
+                  <!-- End Point -->
+                  <mat-form-field appearance="outline" floatLabel="always" class="trip-form-field">
+                    <mat-label>End Point</mat-label>
+                    <input type="text"
+                           placeholder="Select an end point"
+                           matInput
+                           [formControl]="endControl"
+                           [(ngModel)]="EndPoint"
+                           [matAutocomplete]="endPointAuto" required>
+                    <mat-autocomplete #endPointAuto="matAutocomplete">
+                      <mat-option *ngFor="let city of filteredEndOptions | async" [value]="city">
+                        {{ city }}
+                      </mat-option>
+                    </mat-autocomplete>
+                    <mat-icon matPrefix>arrow_forward</mat-icon>
+                  </mat-form-field>
+                  <mat-error *ngIf="startPoint && EndPoint && startPoint == EndPoint">
+                    Start ponit ({{startPoint}}) and End Point ({{EndPoint}}) should not be same
+                  </mat-error>
+                </form>
+              
+                <!-- Add Trip Button -->
+                <div class="add-trip-button-wrapper">
+                  <button mat-raised-button color="primary" class="add-trip-button" (click)="addTrip()" [disabled]="(!startPoint || !EndPoint) || startPoint && EndPoint && startPoint == EndPoint">
+                    <mat-icon>add</mat-icon>
+                    Add a Trip
+                  </button>
+                </div>
+            </div>
+            <!-- Graph-->
+            <div *ngIf="tripsData && tripsData.length > 0" class="graph-container">
+              <h3 class="graph-title">Trip Flow Visualization</h3>
+              <div fxLayout="row" fxLayoutAlign="space-between center">
+                <div>
+                  <button mat-stroked-button>
+                    <mat-icon>
+                      horizontal_rule
+                    </mat-icon>
+                    Continues Trip
+                  </button>
+                </div>
+                <div>
+                  <button mat-stroked-button>
+                    <mat-icon>
+                      more_horiz
+                    </mat-icon>
+                    Constictive Trip
+                  </button>
+                </div>
+                <div>
+                  <button mat-stroked-button>
+                    <mat-icon>
+                      arrow_forward
+                    </mat-icon>
+                    Discontiune Trip
+                  </button>
+                </div>
+              </div>
+              <div class="graph-inner-glass">
+                <ngx-graph [view]="view" [nodes]="nodes" [links]="links"  [draggingEnabled]="false"
+                  layout="dagre">
+            
+                  <ng-template #defsTemplate>
+                    <svg:marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
+                      <svg:path d="M0,-5L10,0L0,5" class="arrow-head" />
+                    </svg:marker>
+                  </ng-template>
+            
+                  <ng-template #nodeTemplate let-node>
+                    <svg:g class="node">
+                      <svg:circle [attr.cx]="node.dimension.width / 2" [attr.cy]="node.dimension.height / 2"
+                        [attr.r]="node.dimension.width / 2" [attr.fill]="node.data?.color"></svg:circle>
+            
+                      <svg:text x="10" y="30" font-size="10" text-anchor="middle" fill="black">
+                        {{ node?.label }}
+                      </svg:text>
+                    </svg:g>
+                  </ng-template>
+            
+            
+                  <ng-template #linkTemplate let-link>
+                    <svg:g class="edge">
+                      <svg:path class="line" *ngIf="!link?.data?.isShowArrow && link.data.level == 1" stroke-width="2"></svg:path>
+                      <svg:path class="line" *ngIf="link?.data?.isShowArrow && link.data.level == 1" stroke-width="2"
+                        marker-end="url(#arrow)"></svg:path>
+                      <svg:path class="line dashed" *ngIf="!link?.data?.isShowArrow && link.data.level == 2" stroke-width="2"
+                        marker-end="url(#star-marker)">
+                      </svg:path>
+                    </svg:g>
+                    <!-- {{link.label}} -->
+                  </ng-template>
+                </ngx-graph>
+              </div>
+            </div>
+        </mat-card-content>
+    </mat-card>
+</div>
+ 
